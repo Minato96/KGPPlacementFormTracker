@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "KGP Fill The Form",
+  "version": "0.1.0",
+  "description": "IIT KGP placement and internship form fetcher and organiser.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://erp.iitkgp.ac.in/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "KGP Fill The Form",
+    "default_popup": "src/popup/popup.html"
+  },
+  "content_scripts": [
+  {
+    "matches": [
+      "https://erp.iitkgp.ac.in/*"
+    ],
+    "js": [
+      "src/content/erp-scanner.js",
+      "src/content/notice-reader.js"
+    ],
+    "css": [
+      "src/content/content.css"
+    ],
+    "all_frames": true,
+    "match_about_blank": true,
+    "run_at": "document_idle"
+  }
+],
+  "options_page": "src/dashboard/dashboard.html"
+}
