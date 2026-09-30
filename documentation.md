@@ -1,6 +1,6 @@
-# KGP Fill The Form
+# KGPPlacementFormTracker
 
-KGP Fill The Form is a Chrome/Edge extension for IIT Kharagpur students to monitor placement and internship notices from the ERP notice board and keep track of relevant application links and deadlines in one place.
+KGPPlacementFormTracker is a Chrome/Edge extension for IIT Kharagpur students to monitor placement and internship notices from the ERP notice board and keep track of relevant application links and deadlines in one place.
 
 This project does not submit forms or log into ERP for you. It works with the user’s existing ERP session and reads notice-board data already available in the browser.
 

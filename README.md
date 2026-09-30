@@ -1,6 +1,6 @@
-# KGP Fill the Form
+# KGPPlacementFormTracker
 
-KGP Fill the Form is a browser extension for IIT Kharagpur students that scans the ERP notice board for placement and internship opportunities, extracts useful links and deadlines, and shows them in a small popup dashboard.
+KGPPlacementFormTracker is a browser extension for IIT Kharagpur students that scans the ERP notice board for placement and internship opportunities, extracts useful links and deadlines, and shows them in a small popup dashboard.
 
 ## How to use it
 
