@@ -2,13 +2,40 @@
   "manifest_version": 3,
   "name": "KGP Placement Form Tracker",
   "version": "1.0",
-  "description": "Collects form links and deadlines from CDC notices.",
+  "description": "Collects form links and deadlines from CDC notice board.",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
   "permissions": ["storage"],
-  "action": { "default_popup": "popup.html", "default_title": "Forms & deadlines" },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Forms & deadlines"
+  },
+
   "content_scripts": [
-    { "matches": ["https://erp.iitkgp.ac.in/*", "https://erp.iitkgp.ernet.in/*"],
-      "js": ["hook.js"], "world": "MAIN", "run_at": "document_start", "all_frames": true },
-    { "matches": ["https://erp.iitkgp.ac.in/*", "https://erp.iitkgp.ernet.in/*"],
-      "js": ["relay.js"], "run_at": "document_start", "all_frames": true }
+    {
+      "matches": [
+        "https://erp.iitkgp.ac.in/*",
+        "https://erp.iitkgp.ernet.in/*"
+      ],
+      "js": ["hook.js"],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://erp.iitkgp.ac.in/*",
+        "https://erp.iitkgp.ernet.in/*"
+      ],
+      "js": ["relay.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
   ]
 }

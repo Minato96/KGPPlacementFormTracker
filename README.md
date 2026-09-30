@@ -1,68 +1,67 @@
-# KGP Fill The Form
+# KGP Fill the Form
 
-A browser extension for IIT Kharagpur students to discover, organise,
-and track placement and internship application forms from the IIT KGP ERP.
+KGP Fill the Form is a browser extension for IIT Kharagpur students that scans the ERP notice board for placement and internship opportunities, extracts useful links and deadlines, and shows them in a small popup dashboard.
+
+## How to use it
+
+### 1) Load the extension in Chrome or Edge
+
+1. Open your browser and go to:
+   - `chrome://extensions` in Chrome
+   - `edge://extensions` in Edge
+2. Turn on Developer mode.
+3. Click the `Load unpacked` button.
+4. Select the project folder containing this extension files.
+5. The extension icon should appear in the browser toolbar.
+
+### 2) Open the ERP and log in
+
+Visit the IIT KGP ERP pages while you are signed in:
+
+- `https://erp.iitkgp.ac.in/`
+- `https://erp.iitkgp.ernet.in/`
+
+Then open the CDC notice board or placement/internship notice pages where the relevant notices are listed.
+
+### 3) Let the extension collect notices
+
+Once the ERP page loads its notice data, the extension listens to the page requests and captures relevant notice rows automatically.
+
+It looks for placement and internship entries, extracts links and deadlines, and stores the information locally in the browser.
+
+### 4) Open the extension popup
+
+Click the extension icon in the toolbar to open the popup.
+
+You will see a dashboard with two sections:
+
+- Placement
+- Internship
+
+Each item shows:
+
+- company name
+- notice subject
+- deadline
+- time remaining
+- extracted application links
+
+### 5) Use it while checking ERP notices
+
+The extension works best when you browse ERP notices normally. As new notices appear, the popup updates with the latest collected data from the current browser session.
+
+> Note: the extension depends on the ERP pages being available in the browser and uses the user’s existing login session. It does not store your ERP credentials.
 
 ## Features
 
-- Fetch placement and internship opportunities from ERP
-- Extract application form links
-- Extract application deadlines
-- Separate placement and internship opportunities
-- Sort opportunities by approaching deadline
-- Track application status
-- Provide a central dashboard
-- Reduce the chance of missing application forms
+- Monitors ERP notices for placement and internship opportunities
+- Extracts links from notice text
+- Tries to detect deadlines from the notice content
+- Filters relevant notices from unrelated updates
+- Groups notices into placement and internship sections
+- Shows everything in a popup dashboard
 
-## Project Status
+## Privacy
 
-🚧 Early Development
+The extension stores collected notice data in the browser’s local storage only. It does not save your ERP username, password, or authentication tokens.
 
-The extension is currently under active development.
-
-## Architecture
-
-```
-IIT KGP ERP
-    ↓
-Content Scanner
-    ↓
-Notice Reader
-    ↓
-Notice Parser
-    ↓
-Deadline / Form Detection
-    ↓
-Local Storage
-    ↓
-Placement / Internship Dashboard
-```
-Privacy
-
-The extension is designed to work with the user's existing
-authenticated IIT KGP ERP session.
-
-No ERP credentials should be stored by the extension.
-
-Development
-
-This project is currently being developed as an open-source
-browser extension.
-
-License
-TBD
-
-
----
-
-# 19. One thing about `.env`
-
-For this project, **we currently don't need `.env` at all**.
-
-Keep it because you've already created it, but don't depend on it.
-
-Chrome extensions are client-side software, so anything bundled into:
-
-```
-manifest.json
-*.js
