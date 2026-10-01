@@ -9,7 +9,8 @@
   ],
 
   "host_permissions": [
-    "https://kgp-placement-form-tracker-backend.noticeboard.workers.dev/*"
+    "https://kgp-placement-form-tracker-backend.noticeboard.workers.dev/*",
+    "https://clgjswrlcwzmdxhhegtk.supabase.co/*"
   ],
   "icons": {
     "16": "icons/icon16.png",
