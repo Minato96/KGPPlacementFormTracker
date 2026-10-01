@@ -2,190 +2,609 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>KGP Fill The Form</title>
+
+  <title>KGP Placement Form Tracker</title>
 
   <style>
-    body {
-      font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      width: 680px;
-      margin: 0;
-      color: #222;
-      background: #fff;
+    * {
+      box-sizing: border-box;
     }
 
+    body {
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      width: 680px;
+      margin: 0;
+
+      color: #172033;
+
+      background:
+        linear-gradient(
+          135deg,
+          #eef4ff 0%,
+          #f8f3ff 48%,
+          #fff8ed 100%
+        );
+    }
+
+    /* ---------------------------------------------------------
+       HEADER
+       --------------------------------------------------------- */
+
     .header {
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid #ddd;
+      padding: 18px 20px 16px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #1d4ed8,
+          #6d28d9,
+          #9333ea
+        );
+
+      color: white;
+
+      box-shadow:
+        0 4px 15px rgba(37, 42, 90, 0.25);
     }
 
     .title {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 21px;
+      font-weight: 800;
+
+      letter-spacing: -0.3px;
     }
 
     .subtitle {
-      color: #777;
-      margin-top: 2px;
+      margin-top: 4px;
+
+      font-size: 12px;
+
+      color: rgba(255, 255, 255, 0.82);
+
+      font-weight: 500;
     }
+
+    /* ---------------------------------------------------------
+       PLAN BADGE
+       --------------------------------------------------------- */
 
     .plan {
-      display: inline-block;
-      margin-top: 7px;
-      padding: 3px 8px;
-      border-radius: 12px;
+      display: inline-flex;
+
+      align-items: center;
+
+      margin-top: 10px;
+
+      padding: 5px 11px;
+
+      border-radius: 999px;
+
       font-size: 11px;
-      font-weight: 700;
+
+      font-weight: 800;
+
+      letter-spacing: 0.4px;
+
+      text-transform: uppercase;
     }
 
-    .free {
-      background: #eee;
-      color: #555;
+    .plan.free {
+      background: rgba(255, 255, 255, 0.18);
+
+      color: white;
+
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    .pro {
-      background: #fff0c2;
-      color: #8a6200;
+    .plan.pro {
+      background:
+        linear-gradient(
+          135deg,
+          #facc15,
+          #f59e0b
+        );
+
+      color: #5b3b00;
+
+      border: 1px solid #fde68a;
+
+      box-shadow:
+        0 2px 7px rgba(0, 0, 0, 0.18);
+    }
+
+    /* ---------------------------------------------------------
+       UPGRADE CARD
+       --------------------------------------------------------- */
+
+    #upgrade {
+      padding-top: 2px;
     }
 
     .upgrade {
-      margin: 10px 16px;
-      padding: 10px 12px;
-      border: 1px solid #e5c76b;
-      border-radius: 7px;
-      background: #fffaf0;
+      margin: 12px 16px;
+
+      padding: 14px 15px;
+
+      border-radius: 12px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #fff7ed,
+          #fffbeb
+        );
+
+      border:
+        1px solid #fbbf24;
+
+      box-shadow:
+        0 3px 12px rgba(245, 158, 11, 0.13);
     }
 
     .upgrade-title {
-      font-weight: 700;
+      font-size: 14px;
+
+      font-weight: 800;
+
+      color: #9a3412;
     }
 
     .upgrade-text {
-      margin-top: 3px;
-      color: #666;
+      margin-top: 5px;
+
+      line-height: 1.45;
+
+      color: #713f12;
+
+      font-size: 12px;
     }
 
-    button {
-      margin-top: 8px;
-      padding: 6px 10px;
-      border: 1px solid #bbb;
-      border-radius: 5px;
-      background: white;
+    .upgrade button {
+      margin-top: 10px;
+
+      padding: 8px 13px;
+
+      border: none;
+
+      border-radius: 8px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #7c3aed
+        );
+
+      color: white;
+
+      font-size: 12px;
+
+      font-weight: 750;
+
       cursor: pointer;
+
+      box-shadow:
+        0 3px 8px rgba(79, 70, 229, 0.25);
+
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
-    button:hover {
-      background: #f5f5f5;
+    .upgrade button:hover {
+      transform: translateY(-1px);
+
+      box-shadow:
+        0 5px 12px rgba(79, 70, 229, 0.32);
     }
+
+    .upgrade button:active {
+      transform: translateY(0);
+    }
+
+    /* ---------------------------------------------------------
+       INFO
+       --------------------------------------------------------- */
 
     #info {
-      padding: 4px 16px 8px;
-      color: #777;
+      margin: 4px 16px 9px;
+
+      padding: 8px 10px;
+
+      border-left: 4px solid #6366f1;
+
+      border-radius: 7px;
+
+      background: #eef2ff;
+
+      color: #4338ca;
+
+      font-size: 11px;
     }
 
+    /* ---------------------------------------------------------
+       CONTENT
+       --------------------------------------------------------- */
+
     #out {
-      padding: 0 16px 16px;
+      padding: 0 16px 18px;
     }
 
     h3 {
-      margin: 14px 0 6px;
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      margin: 15px 0 7px;
+
+      padding: 8px 11px;
+
+      border-radius: 9px;
+
       font-size: 14px;
+
+      font-weight: 800;
+
+      color: white;
+
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.10);
     }
+
+    /*
+     * Placement and Internship sections are both made colorful.
+     * The first table heading gets a blue-purple treatment and
+     * the second follows underneath with a purple-pink treatment.
+     */
+
+    #out h3:nth-of-type(1) {
+      background:
+        linear-gradient(
+          90deg,
+          #2563eb,
+          #4f46e5
+        );
+    }
+
+    #out h3:nth-of-type(2) {
+      background:
+        linear-gradient(
+          90deg,
+          #7c3aed,
+          #db2777
+        );
+    }
+
+    /* ---------------------------------------------------------
+       TABLE
+       --------------------------------------------------------- */
 
     table {
       width: 100%;
-      border-collapse: collapse;
+
+      border-collapse: separate;
+
+      border-spacing: 0;
+
+      overflow: hidden;
+
+      background: white;
+
+      border-radius: 9px;
+
+      box-shadow:
+        0 3px 12px rgba(31, 41, 55, 0.10);
+
+      border:
+        1px solid #dbe4f0;
     }
 
-    td,
     th {
-      padding: 7px 6px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-      vertical-align: middle;
-    }
+      padding: 9px 7px;
 
-    th {
+      background:
+        linear-gradient(
+          90deg,
+          #eff6ff,
+          #f5f3ff
+        );
+
+      color: #334155;
+
       font-size: 11px;
-      color: #777;
-      font-weight: 600;
+
+      font-weight: 800;
+
+      text-align: left;
+
+      border-bottom:
+        2px solid #c7d2fe;
     }
 
-    .crit {
-      font-weight: 700;
+    td {
+      padding: 9px 7px;
+
+      border-bottom:
+        1px solid #e5e7eb;
+
+      text-align: left;
+
+      vertical-align: middle;
+
+      font-size: 12px;
+
+      color: #1f2937;
     }
 
-    .warn {
-      font-weight: 700;
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
-    .ok {
-      font-weight: 700;
+    tbody tr:hover td {
+      background: #f8fbff;
     }
 
-    .done {
-      color: #999;
-    }
-
-    tr.d td {
-      opacity: 0.5;
-    }
+    /* ---------------------------------------------------------
+       LINKS
+       --------------------------------------------------------- */
 
     a {
-      color: #06c;
-      margin-right: 6px;
+      display: inline-block;
+
+      margin-right: 5px;
+
+      margin-bottom: 2px;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background: #eff6ff;
+
+      color: #1d4ed8;
+
+      border:
+        1px solid #bfdbfe;
+
       text-decoration: none;
+
+      font-size: 11px;
+
+      font-weight: 700;
     }
 
     a:hover {
-      text-decoration: underline;
+      background: #dbeafe;
+
+      border-color: #93c5fd;
     }
 
-    small {
-      color: #777;
-    }
+    /* ---------------------------------------------------------
+       LOCKED PRO FEATURES
+       --------------------------------------------------------- */
 
     .locked {
-      color: #8a6200;
-      font-weight: 700;
+      display: inline-block;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #fff7ed,
+          #fef3c7
+        );
+
+      color: #92400e;
+
+      border:
+        1px solid #fcd34d;
+
+      font-size: 11px;
+
+      font-weight: 800;
+
       white-space: nowrap;
     }
 
-    .dev {
-      margin: 0 16px 16px;
-      padding: 8px;
-      border: 1px dashed #aaa;
-      background: #fafafa;
-      font-size: 11px;
+    /* ---------------------------------------------------------
+       TIME STATUS COLORS
+       --------------------------------------------------------- */
+
+    .crit {
+      display: inline-block;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background: #fee2e2;
+
+      color: #b91c1c;
+
+      border:
+        1px solid #fecaca;
+
+      font-weight: 800;
     }
 
-    .dev button {
-      font-size: 11px;
-      margin-right: 5px;
+    .warn {
+      display: inline-block;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background: #fef3c7;
+
+      color: #a16207;
+
+      border:
+        1px solid #fde68a;
+
+      font-weight: 800;
     }
+
+    .ok {
+      display: inline-block;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background: #dcfce7;
+
+      color: #15803d;
+
+      border:
+        1px solid #bbf7d0;
+
+      font-weight: 800;
+    }
+
+    .done {
+      display: inline-block;
+
+      padding: 4px 7px;
+
+      border-radius: 6px;
+
+      background: #f1f5f9;
+
+      color: #64748b;
+
+      border:
+        1px solid #cbd5e1;
+
+      font-weight: 700;
+    }
+
+    /* ---------------------------------------------------------
+       COMPLETED ROW
+       --------------------------------------------------------- */
+
+    tr.d td {
+      opacity: 0.62;
+
+      background: #f8fafc;
+    }
+
+    /* ---------------------------------------------------------
+       SMALL TEXT
+       --------------------------------------------------------- */
+
+    small {
+      color: #64748b;
+    }
+
+    /* ---------------------------------------------------------
+       EMPTY STATE
+       --------------------------------------------------------- */
+
+    td[colspan="4"] {
+      text-align: center;
+
+      padding: 18px;
+
+      color: #64748b;
+
+      background: #f8fafc;
+
+      font-weight: 600;
+    }
+    /* ---------------------------------------------------------
+   CHECKBOX COLUMN
+   --------------------------------------------------------- */
+
+.check-header {
+  width: 48px;
+  text-align: center;
+}
+
+.check-cell {
+  width: 48px;
+  text-align: center;
+}
+
+
+/* ---------------------------------------------------------
+   CUSTOM CHECKBOX
+   --------------------------------------------------------- */
+
+.notice-check {
+  width: 17px;
+  height: 17px;
+
+  accent-color: #6366f1;
+
+  cursor: pointer;
+
+  vertical-align: middle;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKED ROW
+   --------------------------------------------------------- */
+
+.checked-row td {
+  background: #ecfdf5;
+}
+
+.checked-row td:first-child {
+  border-left: 3px solid #10b981;
+}
+
+.checked-row td:nth-child(2) {
+  color: #065f46;
+}
+
+.checked-row small {
+  color: #64748b;
+}
   </style>
 </head>
 
 <body>
 
   <div class="header">
-    <div class="title">KGP Fill The Form</div>
-    <div class="subtitle">IIT KGP Placement & Internship Tracker</div>
-    <span id="plan" class="plan free">FREE</span>
+
+    <div class="title">
+      KGP Placement Form Tracker
+    </div>
+
+    <div class="subtitle">
+      IIT KGP Placement & Internship Tracker
+    </div>
+
+    <span
+      id="plan"
+      class="plan free"
+    >
+      FREE
+    </span>
+
   </div>
+
 
   <div id="upgrade"></div>
 
+
   <div id="info"></div>
+
 
   <div id="out"></div>
 
-  <!-- Temporary development controls.
-       Remove these before production/payment integration. -->
-  <div class="dev">
-    <b>Development controls</b><br>
-    <button id="enablePro">Enable PRO</button>
-    <button id="disablePro">Disable PRO</button>
-  </div>
 
   <script src="parse.js"></script>
   <script src="popup.js"></script>
