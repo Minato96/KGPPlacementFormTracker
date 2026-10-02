@@ -10,6 +10,7 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 /*
  * ============================================================
+<<<<<<< HEAD
  * PRO ENTITLEMENT SIGNING KEY
  * ============================================================
  *
@@ -35,6 +36,8 @@ const LICENSE_PUBLIC_JWK =
 
 /*
  * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * LICENSE CACHE
  * ============================================================
  *
@@ -88,6 +91,7 @@ const esc = s =>
 
 /*
  * ============================================================
+<<<<<<< HEAD
  * ENTITLEMENT TOKEN VERIFICATION
  * ============================================================
  *
@@ -254,6 +258,8 @@ async function verifyLicenseToken(
 
 /*
  * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * TIME LEFT
  * ============================================================
  */
@@ -394,6 +400,7 @@ async function getInstallationId() {
 
 /*
  * ============================================================
+<<<<<<< HEAD
  * INSTALLATION CREDENTIALS
  * ============================================================
  *
@@ -633,6 +640,8 @@ async function getInstallationCredentials() {
 
 /*
  * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * LICENSE CACHE READ
  * ============================================================
  */
@@ -644,9 +653,12 @@ async function getLicenseCache() {
     pro:
       false,
 
+<<<<<<< HEAD
     license_token:
       null,
 
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     license_status:
       'UNKNOWN',
 
@@ -681,6 +693,7 @@ async function verifyLicense(
     Date.now();
 
 
+<<<<<<< HEAD
   /*
    * Resolve credentials first: a gate that only trusts a stored
    * boolean would otherwise let anyone unlock PRO by writing
@@ -711,6 +724,8 @@ async function verifyLicense(
     credentials.installation_id;
 
 
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
   const cacheFresh =
     cached.license_checked_at >
       0 &&
@@ -733,9 +748,14 @@ async function verifyLicense(
 
 
   /*
+<<<<<<< HEAD
    * Use the local cache only when it carries a token that still
    * verifies. The crypto check is what makes the cache safe to
    * trust — a tampered storage value simply fails verification.
+=======
+   * Use local cache unless a fresh purchase
+   * needs verification.
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
    */
 
   if (
@@ -744,6 +764,7 @@ async function verifyLicense(
     !purchaseFresh
   ) {
 
+<<<<<<< HEAD
     const tokenValid =
       await verifyLicenseToken(
         cached.license_token,
@@ -772,11 +793,32 @@ async function verifyLicense(
      * Cached value is unusable — fall through to the server. We
      * never return a stale `true` from here.
      */
+=======
+    return {
+
+      pro:
+        cached.pro === true,
+
+      status:
+        cached.license_status ||
+        'UNKNOWN',
+
+      fromCache:
+        true
+    };
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
   }
 
 
   try {
 
+<<<<<<< HEAD
+=======
+    const installationId =
+      await getInstallationId();
+
+
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     const response =
       await fetch(
         `${API_BASE}/verify-license`,
@@ -792,10 +834,14 @@ async function verifyLicense(
           body:
             JSON.stringify({
               installation_id:
+<<<<<<< HEAD
                 installationId,
 
               install_secret:
                 credentials.install_secret
+=======
+                installationId
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
             })
         }
       );
@@ -815,22 +861,30 @@ async function verifyLicense(
       await response.json();
 
 
+<<<<<<< HEAD
     /*
      * PRO requires all three: a successful call, pro === true,
      * and a signature-valid token minted for this installation.
      */
 
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     const isPro =
       data.success === true &&
 
       data.pro === true &&
 
+<<<<<<< HEAD
       data.status === 'ACTIVE' &&
 
       (await verifyLicenseToken(
         data.license_token,
         installationId
       ));
+=======
+      data.status ===
+        'ACTIVE';
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     await chrome.storage.local.set({
@@ -838,11 +892,14 @@ async function verifyLicense(
       pro:
         isPro,
 
+<<<<<<< HEAD
       license_token:
         isPro
           ? data.license_token
           : null,
 
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
       license_status:
         data.status ||
         'UNKNOWN',
@@ -889,6 +946,7 @@ async function verifyLicense(
     );
 
 
+<<<<<<< HEAD
     /*
      * The Worker is unreachable.
      *
@@ -905,11 +963,51 @@ async function verifyLicense(
         cached.license_token,
         installationId
       ));
+=======
+    const fallback =
+      await getLicenseCache();
+
+
+    const fallbackAge =
+      fallback.license_checked_at >
+        0
+
+        ? Date.now() -
+          fallback.license_checked_at
+
+        : Infinity;
+
+
+    /*
+     * Temporary Worker outage:
+     * allow the last known state for 24 hours.
+     */
+
+    if (
+      fallbackAge <=
+      24 * 60 * 60 * 1000
+    ) {
+
+      return {
+
+        pro:
+          fallback.pro === true,
+
+        status:
+          fallback.license_status ||
+          'UNKNOWN',
+
+        fromCache:
+          true
+      };
+    }
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     return {
 
       pro:
+<<<<<<< HEAD
         offlineValid,
 
       status:
@@ -920,6 +1018,15 @@ async function verifyLicense(
 
       fromCache:
         true
+=======
+        false,
+
+      status:
+        'UNKNOWN',
+
+      fromCache:
+        false
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     };
   }
 }
@@ -935,6 +1042,7 @@ async function startProCheckout() {
 
   try {
 
+<<<<<<< HEAD
     const credentials =
       await getInstallationCredentials();
 
@@ -947,6 +1055,10 @@ async function startProCheckout() {
 
       return;
     }
+=======
+    const installationId =
+      await getInstallationId();
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     /*
@@ -966,6 +1078,7 @@ async function startProCheckout() {
     });
 
 
+<<<<<<< HEAD
     /*
      * The secret travels in the URL fragment, which is never sent
      * to the server and never appears in Referer.
@@ -975,6 +1088,12 @@ async function startProCheckout() {
       `${API_BASE}/checkout?installation_id=${encodeURIComponent(
         credentials.installation_id
       )}#s=${credentials.install_secret}`;
+=======
+    const checkoutUrl =
+      `${API_BASE}/checkout?installation_id=${encodeURIComponent(
+        installationId
+      )}`;
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     await chrome.tabs.create({
@@ -2414,6 +2533,7 @@ async function restorePro(
        * Get the current browser installation.
        */
 
+<<<<<<< HEAD
       const credentials =
         await getInstallationCredentials();
 
@@ -2424,6 +2544,10 @@ async function restorePro(
           'Could not reach the license server. Please try again.'
         );
       }
+=======
+      const installationId =
+        await getInstallationId();
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
       /*
@@ -2452,10 +2576,14 @@ async function restorePro(
               JSON.stringify({
 
                 installation_id:
+<<<<<<< HEAD
                   credentials.installation_id,
 
                 install_secret:
                   credentials.install_secret
+=======
+                  installationId
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
               })
 
@@ -2489,6 +2617,7 @@ async function restorePro(
       /*
        * Successfully restored.
        *
+<<<<<<< HEAD
        * Trust it only if the Worker's token verifies — the same
        * check verifyLicense() performs.
        */
@@ -2509,6 +2638,8 @@ async function restorePro(
 
 
       /*
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
        * Clear the pending OTP state.
        */
 
@@ -2520,9 +2651,12 @@ async function restorePro(
         pro:
           true,
 
+<<<<<<< HEAD
         license_token:
           restoreData.license_token,
 
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
         license_status:
           'ACTIVE',
 

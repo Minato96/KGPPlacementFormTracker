@@ -1,7 +1,11 @@
 {
   "manifest_version": 3,
   "name": "KGP Placement Form Tracker",
+<<<<<<< HEAD
   "version": "1.1",
+=======
+  "version": "1.0",
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
   "description": "Collects form links and deadlines from CDC notices.",
 
   "permissions": [
