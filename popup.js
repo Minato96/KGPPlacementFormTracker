@@ -30,7 +30,7 @@ const SUPABASE_PUBLISHABLE_KEY =
  */
 
 const LICENSE_PUBLIC_JWK =
-  null; // <- paste {"kty":"EC","crv":"P-256","x":"...","y":"..."}
+  {"kty":"EC","crv":"P-256","x":"VAGAqhtx9Ix1Fp3d6fsXO12UQ1qvRQK360rPGfBTc6Q","y":"MtnJr-i1nzxpywRqRqeYJWtOY3RLvCIcaLzTnMMCBvw"};
 
 
 /*
@@ -561,10 +561,30 @@ async function getInstallationCredentials() {
       )
     ) {
 
-      throw new Error(
-        data?.error ||
-          `Registration failed: ${response.status}`
-      );
+      /*
+       * A 404 here means the deployed Worker predates
+       * /register-installation. That is a deployment problem, not
+       * a connectivity one, and waiting an hour will not fix it.
+       */
+
+      const serverOutdated =
+        response.status === 404;
+
+
+      const error =
+        new Error(
+          serverOutdated
+            ? 'The license server does not expose /register-installation (outdated deployment).'
+            : data?.error ||
+              `Registration failed: ${response.status}`
+        );
+
+
+      error.serverOutdated =
+        serverOutdated;
+
+
+      throw error;
     }
 
 
@@ -618,11 +638,32 @@ async function getInstallationCredentials() {
     );
 
 
+    /*
+     * Back off only when retrying could actually help. Muting the
+     * client for an hour on a 404 would hide a deploy problem
+     * behind "check your connection" and show no request leaving,
+     * which is exactly the misleading symptom this caused.
+     */
+
+    if (
+      !error?.serverOutdated
+    ) {
+
+      await chrome.storage.local.set({
+
+        install_secret_recheck_after:
+          Date.now() +
+          60 * 60 * 1000
+      });
+    }
+
+
     await chrome.storage.local.set({
 
-      install_secret_recheck_after:
-        Date.now() +
-        60 * 60 * 1000
+      last_registration_error:
+        error?.serverOutdated
+          ? 'server_outdated'
+          : 'unreachable'
     });
 
 
@@ -941,8 +982,28 @@ async function startProCheckout() {
 
     if (!credentials) {
 
+      /*
+       * getInstallationCredentials() stores why it failed. Say so
+       * instead of always blaming the network: an outdated Worker
+       * is not something "check your connection" can fix.
+       */
+
+      const {
+        last_registration_error:
+          reason
+      } =
+        await chrome.storage.local.get(
+          'last_registration_error'
+        );
+
+
       alert(
-        'Could not reach the license server. Please check your connection and try again.'
+        reason ===
+          'server_outdated'
+
+          ? 'The license server is running an outdated version that is missing the registration endpoint. There is no request the extension can make until the backend is redeployed.'
+
+          : 'Could not reach the license server. Please check your connection and try again.'
       );
 
       return;
