@@ -10,6 +10,34 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 /*
  * ============================================================
+<<<<<<< HEAD
+ * PRO ENTITLEMENT SIGNING KEY
+ * ============================================================
+ *
+ * Public half of the ECDSA P-256 keypair the Worker signs PRO
+ * entitlement tokens with.
+ *
+ * The matching private key lives only in the Worker (secret
+ * LICENSE_SIGNING_KEY), so this value cannot be used to mint a
+ * token — flipping chrome.storage.local.pro no longer unlocks
+ * anything.
+ *
+ * Generate a pair with:
+ *     worker/tools/generate-license-keypair.sh
+ *
+ * Until the placeholder below is replaced, verifyLicenseToken()
+ * returns false and PRO stays locked.
+ * ============================================================
+ */
+
+const LICENSE_PUBLIC_JWK =
+  null; // <- paste {"kty":"EC","crv":"P-256","x":"...","y":"..."}
+
+
+/*
+ * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * LICENSE CACHE
  * ============================================================
  *
@@ -63,6 +91,175 @@ const esc = s =>
 
 /*
  * ============================================================
+<<<<<<< HEAD
+ * ENTITLEMENT TOKEN VERIFICATION
+ * ============================================================
+ *
+ * The Worker signs {license_id, installation_id, iat, exp} with
+ * ECDSA P-256. We only hold the public key, so we can check a
+ * token but never produce one.
+ *
+ * A missing key, a bad signature, an expired token or a token
+ * minted for a different installation all fail closed.
+ * ============================================================
+ */
+
+function base64UrlToBytes(
+  value
+) {
+
+  const padded =
+    value
+      .replace(/-/g, '+')
+      .replace(/_/g, '/') +
+    '==='.slice(
+      (value.length + 3) % 4
+    );
+
+
+  const binary =
+    atob(padded);
+
+
+  const bytes =
+    new Uint8Array(
+      binary.length
+    );
+
+
+  for (
+    let i = 0;
+    i < binary.length;
+    i++
+  ) {
+
+    bytes[i] =
+      binary.charCodeAt(i);
+  }
+
+
+  return bytes;
+}
+
+
+async function verifyLicenseToken(
+  token,
+  installationId
+) {
+
+  if (
+    !LICENSE_PUBLIC_JWK ||
+    typeof token !== 'string'
+  ) {
+
+    return false;
+  }
+
+
+  const parts =
+    token.split('.');
+
+
+  if (
+    parts.length !== 2
+  ) {
+
+    return false;
+  }
+
+
+  const [
+    payload,
+    signature
+  ] = parts;
+
+
+  try {
+
+    const key =
+      await crypto.subtle.importKey(
+        'jwk',
+        LICENSE_PUBLIC_JWK,
+        {
+          name: 'ECDSA',
+          namedCurve: 'P-256'
+        },
+        false,
+        ['verify']
+      );
+
+
+    const valid =
+      await crypto.subtle.verify(
+        {
+          name: 'ECDSA',
+          hash: 'SHA-256'
+        },
+        key,
+        base64UrlToBytes(
+          signature
+        ),
+        new TextEncoder().encode(
+          payload
+        )
+      );
+
+
+    if (!valid) {
+
+      return false;
+    }
+
+
+    const claims =
+      JSON.parse(
+        new TextDecoder().decode(
+          base64UrlToBytes(
+            payload
+          )
+        )
+      );
+
+
+    /*
+     * Reject tokens that are expired or were issued for another
+     * installation.
+     */
+
+    if (
+      !claims ||
+      claims.v !== 1 ||
+      typeof claims.exp !== 'number' ||
+      claims.exp <= Date.now() ||
+      claims.installation_id !==
+        installationId
+    ) {
+
+      return false;
+    }
+
+
+    return true;
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      'License token verification failed:',
+      error
+    );
+
+
+    return false;
+  }
+}
+
+
+/*
+ * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * TIME LEFT
  * ============================================================
  */
@@ -203,6 +400,248 @@ async function getInstallationId() {
 
 /*
  * ============================================================
+<<<<<<< HEAD
+ * INSTALLATION CREDENTIALS
+ * ============================================================
+ *
+ * installation_id alone used to be enough to call the Worker.
+ * It is not a secret — it sits in storage, in the /checkout URL
+ * and in Cashfree's customer_id — so every installation now
+ * also carries a random secret issued at registration.
+ *
+ * Returns { installation_id, install_secret } or null when this
+ * browser has no usable registration yet.
+ * ============================================================
+ */
+
+const INSTALL_SECRET_PATTERN =
+  /^[0-9a-f]{64}$/;
+
+
+async function registerInstallation(
+  installationId
+) {
+
+  return await fetch(
+    `${API_BASE}/register-installation`,
+    {
+      method: 'POST',
+
+      headers: {
+        'Content-Type':
+          'application/json'
+      },
+
+      body:
+        JSON.stringify({
+          installation_id:
+            installationId
+        })
+    }
+  );
+}
+
+
+async function getInstallationCredentials() {
+
+  const stored =
+    await chrome.storage.local.get({
+
+      installation_id:
+        null,
+
+      install_secret:
+        null,
+
+      install_secret_recheck_after:
+        0
+    });
+
+
+  if (
+    stored.installation_id &&
+    INSTALL_SECRET_PATTERN.test(
+      stored.install_secret || ''
+    )
+  ) {
+
+    return {
+      installation_id:
+        stored.installation_id,
+
+      install_secret:
+        stored.install_secret
+    };
+  }
+
+
+  /*
+   * Re-registering is rate limited server-side (20/hour/IP), so
+   * do not retry on every render — back off for an hour.
+   */
+
+  if (
+    Date.now() <
+    Number(
+      stored.install_secret_recheck_after ||
+      0
+    )
+  ) {
+
+    return null;
+  }
+
+
+  /*
+   * Reuse the existing installation_id when there is one.
+   *
+   * Installations that predate secrets are already linked to a
+   * license in the database, and the /verify-license and
+   * /restore-license lookups are keyed on this id. Minting a new
+   * one here would orphan an existing PRO licence and force a
+   * restore.
+   */
+
+  /*
+   * The id the server issued a secret for. Tracked separately so
+   * the stored pair can never mix an old id with a new secret.
+   */
+
+  let registeredId =
+    await getInstallationId();
+
+
+  try {
+
+    let response =
+      await registerInstallation(
+        registeredId
+      );
+
+
+    let data =
+      await response
+        .json()
+        .catch(() => ({}));
+
+
+    /*
+     * ALREADY_REGISTERED means the database still holds a secret
+     * for this id but we no longer have it (storage cleared, or a
+     * reinstall over an existing profile).
+     *
+     * We cannot recover the old secret — the server only stores a
+     * hash — so abandon this id and register a new installation.
+     * A PRO license is recovered afterwards through Restore PRO,
+     * which is keyed on the verified email rather than the
+     * installation.
+     */
+
+    if (
+      response.status === 409 ||
+      data?.code ===
+        'ALREADY_REGISTERED'
+    ) {
+
+      registeredId =
+        'kgp_install_' +
+        crypto.randomUUID();
+
+
+      response =
+        await registerInstallation(
+          registeredId
+        );
+
+
+      data =
+        await response
+          .json()
+          .catch(() => ({}));
+    }
+
+
+    if (
+      !response.ok ||
+      !INSTALL_SECRET_PATTERN.test(
+        data?.install_secret || ''
+      )
+    ) {
+
+      throw new Error(
+        data?.error ||
+          `Registration failed: ${response.status}`
+      );
+    }
+
+
+    const credentials = {
+
+      installation_id:
+        data.installation_id ||
+        registeredId,
+
+      install_secret:
+        data.install_secret
+    };
+
+
+    await chrome.storage.local.set({
+
+      ...credentials,
+
+      /*
+       * A fresh installation starts life not-PRO. Any leftover
+       * entitlement from a previous registration must not carry
+       * over.
+       */
+
+      pro:
+        false,
+
+      license_token:
+        null,
+
+      license_status:
+        'UNKNOWN',
+
+      license_checked_at:
+        0,
+
+      install_secret_recheck_after:
+        0
+    });
+
+
+    return credentials;
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      'Installation registration failed:',
+      error
+    );
+
+
+    await chrome.storage.local.set({
+
+      install_secret_recheck_after:
+        Date.now() +
+        60 * 60 * 1000
+    });
+
+
+    return null;
+  }
+}
+
+
+/*
+ * ============================================================
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
  * LICENSE CACHE READ
  * ============================================================
  */
@@ -214,6 +653,12 @@ async function getLicenseCache() {
     pro:
       false,
 
+<<<<<<< HEAD
+    license_token:
+      null,
+
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     license_status:
       'UNKNOWN',
 
@@ -248,6 +693,39 @@ async function verifyLicense(
     Date.now();
 
 
+<<<<<<< HEAD
+  /*
+   * Resolve credentials first: a gate that only trusts a stored
+   * boolean would otherwise let anyone unlock PRO by writing
+   * chrome.storage.local.pro = true.
+   */
+
+  const credentials =
+    await getInstallationCredentials();
+
+
+  if (!credentials) {
+
+    return {
+
+      pro:
+        false,
+
+      status:
+        'UNKNOWN',
+
+      fromCache:
+        false
+    };
+  }
+
+
+  const installationId =
+    credentials.installation_id;
+
+
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
   const cacheFresh =
     cached.license_checked_at >
       0 &&
@@ -270,8 +748,14 @@ async function verifyLicense(
 
 
   /*
+<<<<<<< HEAD
+   * Use the local cache only when it carries a token that still
+   * verifies. The crypto check is what makes the cache safe to
+   * trust — a tampered storage value simply fails verification.
+=======
    * Use local cache unless a fresh purchase
    * needs verification.
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
    */
 
   if (
@@ -280,6 +764,36 @@ async function verifyLicense(
     !purchaseFresh
   ) {
 
+<<<<<<< HEAD
+    const tokenValid =
+      await verifyLicenseToken(
+        cached.license_token,
+        installationId
+      );
+
+
+    if (tokenValid) {
+
+      return {
+
+        pro:
+          true,
+
+        status:
+          cached.license_status ||
+          'ACTIVE',
+
+        fromCache:
+          true
+      };
+    }
+
+
+    /*
+     * Cached value is unusable — fall through to the server. We
+     * never return a stale `true` from here.
+     */
+=======
     return {
 
       pro:
@@ -292,15 +806,19 @@ async function verifyLicense(
       fromCache:
         true
     };
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
   }
 
 
   try {
 
+<<<<<<< HEAD
+=======
     const installationId =
       await getInstallationId();
 
 
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     const response =
       await fetch(
         `${API_BASE}/verify-license`,
@@ -316,7 +834,14 @@ async function verifyLicense(
           body:
             JSON.stringify({
               installation_id:
+<<<<<<< HEAD
+                installationId,
+
+              install_secret:
+                credentials.install_secret
+=======
                 installationId
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
             })
         }
       );
@@ -336,13 +861,30 @@ async function verifyLicense(
       await response.json();
 
 
+<<<<<<< HEAD
+    /*
+     * PRO requires all three: a successful call, pro === true,
+     * and a signature-valid token minted for this installation.
+     */
+
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     const isPro =
       data.success === true &&
 
       data.pro === true &&
 
+<<<<<<< HEAD
+      data.status === 'ACTIVE' &&
+
+      (await verifyLicenseToken(
+        data.license_token,
+        installationId
+      ));
+=======
       data.status ===
         'ACTIVE';
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     await chrome.storage.local.set({
@@ -350,6 +892,14 @@ async function verifyLicense(
       pro:
         isPro,
 
+<<<<<<< HEAD
+      license_token:
+        isPro
+          ? data.license_token
+          : null,
+
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
       license_status:
         data.status ||
         'UNKNOWN',
@@ -396,6 +946,24 @@ async function verifyLicense(
     );
 
 
+<<<<<<< HEAD
+    /*
+     * The Worker is unreachable.
+     *
+     * This used to replay the last known `pro` value for 24 hours,
+     * which meant anyone could unlock PRO permanently just by
+     * blocking the API. It now fails closed: we honour a cached
+     * positive only while the signed token is still valid, and
+     * otherwise report not-PRO.
+     */
+
+    const offlineValid =
+      cached.pro === true &&
+      (await verifyLicenseToken(
+        cached.license_token,
+        installationId
+      ));
+=======
     const fallback =
       await getLicenseCache();
 
@@ -433,11 +1001,24 @@ async function verifyLicense(
           true
       };
     }
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     return {
 
       pro:
+<<<<<<< HEAD
+        offlineValid,
+
+      status:
+        offlineValid
+          ? cached.license_status ||
+            'ACTIVE'
+          : 'UNKNOWN',
+
+      fromCache:
+        true
+=======
         false,
 
       status:
@@ -445,6 +1026,7 @@ async function verifyLicense(
 
       fromCache:
         false
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
     };
   }
 }
@@ -460,8 +1042,23 @@ async function startProCheckout() {
 
   try {
 
+<<<<<<< HEAD
+    const credentials =
+      await getInstallationCredentials();
+
+
+    if (!credentials) {
+
+      alert(
+        'Could not reach the license server. Please check your connection and try again.'
+      );
+
+      return;
+    }
+=======
     const installationId =
       await getInstallationId();
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     /*
@@ -481,10 +1078,22 @@ async function startProCheckout() {
     });
 
 
+<<<<<<< HEAD
+    /*
+     * The secret travels in the URL fragment, which is never sent
+     * to the server and never appears in Referer.
+     */
+
+    const checkoutUrl =
+      `${API_BASE}/checkout?installation_id=${encodeURIComponent(
+        credentials.installation_id
+      )}#s=${credentials.install_secret}`;
+=======
     const checkoutUrl =
       `${API_BASE}/checkout?installation_id=${encodeURIComponent(
         installationId
       )}`;
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
     await chrome.tabs.create({
@@ -1924,8 +2533,21 @@ async function restorePro(
        * Get the current browser installation.
        */
 
+<<<<<<< HEAD
+      const credentials =
+        await getInstallationCredentials();
+
+
+      if (!credentials) {
+
+        throw new Error(
+          'Could not reach the license server. Please try again.'
+        );
+      }
+=======
       const installationId =
         await getInstallationId();
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
 
       /*
@@ -1954,7 +2576,14 @@ async function restorePro(
               JSON.stringify({
 
                 installation_id:
+<<<<<<< HEAD
+                  credentials.installation_id,
+
+                install_secret:
+                  credentials.install_secret
+=======
                   installationId
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
 
               })
 
@@ -1988,6 +2617,29 @@ async function restorePro(
       /*
        * Successfully restored.
        *
+<<<<<<< HEAD
+       * Trust it only if the Worker's token verifies — the same
+       * check verifyLicense() performs.
+       */
+
+      const restoreTokenValid =
+        await verifyLicenseToken(
+          restoreData.license_token,
+          credentials.installation_id
+        );
+
+
+      if (!restoreTokenValid) {
+
+        throw new Error(
+          'Could not verify the restored license. Please try again.'
+        );
+      }
+
+
+      /*
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
        * Clear the pending OTP state.
        */
 
@@ -1999,6 +2651,12 @@ async function restorePro(
         pro:
           true,
 
+<<<<<<< HEAD
+        license_token:
+          restoreData.license_token,
+
+=======
+>>>>>>> 4390d96dac0d602c442d155672e64cb0b0d66d81
         license_status:
           'ACTIVE',
 
